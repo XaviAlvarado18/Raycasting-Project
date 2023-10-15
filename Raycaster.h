@@ -14,7 +14,7 @@
 const Color B = {0, 0, 0};
 const Color W = {255, 255, 255};
 
-const int WIDTH = 16;
+const int WIDTH = 21;
 const int HEIGHT = 11;
 const int BLOCK = 50;
 const int SCREEN_WIDTH = WIDTH * BLOCK;
@@ -114,7 +114,7 @@ public:
         break;
       }
      
-      point(x, y, W);
+      //point(x, y, W);
       
       d += 1;
     }
@@ -137,7 +137,7 @@ public:
   void render() {
     
     // draw left side of the screen
-    
+    /*
     for (int x = 0; x < SCREEN_WIDTH; x += BLOCK) {
       for (int y = 0; y < SCREEN_HEIGHT; y += BLOCK) {
         int i = static_cast<int>(x / BLOCK);
@@ -157,9 +157,10 @@ public:
       cast_ray(a);
     }
 
+    */
     // draw right side of the screen
     
-    for (int i = 1; i < SCREEN_WIDTH; i++) {
+    for (int i = 0; i < SCREEN_WIDTH; i++) {
       double a = player.a + player.fov / 2.0 - player.fov * i / SCREEN_WIDTH;
       Impact impact = cast_ray(a);
       float d = impact.d;
@@ -168,8 +169,8 @@ public:
       if (d == 0) {
         exit(1);
       }
-      int x = SCREEN_WIDTH + i;
-      float h = static_cast<float>(SCREEN_HEIGHT)/static_cast<float>(d) * static_cast<float>(scale);
+      int x = i;
+      float h = static_cast<float>(SCREEN_HEIGHT)/static_cast<float>(d * cos(a - player.a)) * static_cast<float>(scale);
       draw_stake(x, h, impact);
     }
 

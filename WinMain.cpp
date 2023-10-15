@@ -21,7 +21,7 @@ void draw_floor() {
   // floor color
   SDL_SetRenderDrawColor(renderer, 112, 122, 122, 255);
   SDL_Rect rect = {
-    SCREEN_WIDTH, 
+    0, 
     SCREEN_HEIGHT / 2,
     SCREEN_WIDTH,
     SCREEN_HEIGHT / 2
@@ -29,19 +29,26 @@ void draw_floor() {
   SDL_RenderFillRect(renderer, &rect);
 }
 
+void draw_ui(){
+  int sizeP = 224;
+  int sizeB = 125;
+  ImageLoader::render(renderer, "p", SCREEN_WIDTH - sizeP/1.0f, SCREEN_HEIGHT - sizeP, sizeP);
+  ImageLoader::render(renderer, "b", SCREEN_WIDTH/2 - sizeB/2.0f, SCREEN_HEIGHT - sizeB, sizeB);
+}
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
   SDL_Init(SDL_INIT_VIDEO);
   int imgFlags = IMG_INIT_PNG;
-  window = SDL_CreateWindow("DOOM", 0, 0, SCREEN_WIDTH * 2, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+  window = SDL_CreateWindow("DOOM", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
   ImageLoader::loadImage("+", "assets/wall2.png");
   ImageLoader::loadImage("-", "assets/iron.png");
   ImageLoader::loadImage("|", "assets/wall2.png");
-
-
+  ImageLoader::loadImage("p", "assets/ironpickaxe.png");
+  ImageLoader::loadImage("b", "assets/background.png");
 
 
   Raycaster r = { renderer };
@@ -82,6 +89,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     draw_floor();
 
     r.render();
+
+    draw_ui();
 
     // render
 
