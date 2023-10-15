@@ -6,7 +6,7 @@
 #include <windows.h>
 #include "Raycaster.h"
 #include "color.h"
-#include "SDL_image.h"
+#include "include/SDL_image.h"
 #include <stdexcept>
 #include <map>
 
@@ -89,6 +89,17 @@ public:
 
         // Free the created texture
         SDL_DestroyTexture(texture);
+    }
+
+    // Clean up
+    static void cleanup() {
+        for (auto& pair : imageSurfaces) {
+            if (pair.second) {
+                SDL_FreeSurface(pair.second);
+            }
+        }
+        imageSurfaces.clear();
+        IMG_Quit();
     }
 };
 

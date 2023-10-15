@@ -9,7 +9,7 @@
 #include <SDL2/SDL.h>
 #include <unordered_map>
 #include "color.h"
-
+#include "imageloader.h"
 
 const Color B = {0, 0, 0};
 const Color W = {255, 255, 255};
@@ -37,7 +37,8 @@ std::unordered_map<std::string, Color> colors = {
 
 struct Impact {
   float d;
-  Color c;
+  std::string mapHit;  // + | -
+  int tx;
 };
 
 class Raycaster {
@@ -51,7 +52,8 @@ public:
     player.a = M_PI / 4.0f;
     player.fov = M_PI/2.0f;
 
-    scale = 100;
+    scale = 50;
+    tsize = 128;
   }
 
   void load_map(const std::string& filename) {
@@ -68,15 +70,24 @@ public:
     SDL_RenderDrawPoint(renderer, x, y);
   }
 
-  void rect(int x, int y, Color c) {
-    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
-    SDL_Rect rect = { x, y, BLOCK, BLOCK };
-    SDL_RenderFillRect(renderer, &rect);
+  void rect(int x, int y, const std::string& mapHit) {
+    for(int cx = x; cx < x + BLOCK; cx++) {
+      for(int cy = y; cy < y + BLOCK; cy++) {
+        int tx = ((cx - x) * tsize) / BLOCK;
+        int ty = ((cy - y) * tsize) / BLOCK;
+
+        Color c = ImageLoader::getPixelColor(mapHit, tx, ty);
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b , 255);
+        SDL_RenderDrawPoint(renderer, cx, cy);
+      }
+    }
   }
 
   Impact cast_ray(float a) {
     float d = 0;
     std::string mapHit;
+    int tx;
+
     while(true) {
       int x = static_cast<int>(player.x + d * cos(a)); 
       int y = static_cast<int>(player.y + d * sin(a)); 
@@ -87,6 +98,19 @@ public:
 
       if (map[j][i] != ' ') {
         mapHit = map[j][i];
+
+        int hitx = x - i * BLOCK;
+        int hity = y - j * BLOCK;
+        int maxhit;
+
+        if (hitx == 0 || hitx == BLOCK - 1) {
+          maxhit = hity;
+        } else {
+          maxhit = hitx;
+        }
+
+        tx = maxhit * tsize / BLOCK;
+
         break;
       }
      
@@ -94,14 +118,20 @@ public:
       
       d += 1;
     }
-    return Impact{d, colors[mapHit]};
+    return Impact{d, mapHit, tx};
   }
 
-  void draw_stake(int x, float h, Color c) {
-    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+  void draw_stake(int x, float h, Impact i) {
     float start = SCREEN_HEIGHT/2.0f - h/2.0f;
-    SDL_Rect rect = { x, static_cast<int>(start), 1, static_cast<int>(h) };
-    SDL_RenderFillRect(renderer, &rect);
+    float end = start + h;
+
+    for (int y = start; y < end; y++) {
+      int ty = (y - start) * tsize / h;
+      Color c = ImageLoader::getPixelColor(i.mapHit, i.tx, ty);
+      SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+
+      SDL_RenderDrawPoint(renderer, x, y);
+    }
   } 
  
   void render() {
@@ -116,8 +146,8 @@ public:
         if (map[j][i] != ' ') {
           std::string mapHit;
           mapHit = map[j][i];
-          Color c = colors[mapHit];
-          rect(x, y, c);
+          Color c = Color(255, 0, 0);
+          rect(x, y, mapHit);
         }
       }
     }
@@ -133,14 +163,14 @@ public:
       double a = player.a + player.fov / 2.0 - player.fov * i / SCREEN_WIDTH;
       Impact impact = cast_ray(a);
       float d = impact.d;
-      Color c = impact.c;
+      Color c = Color(255, 0, 0);
 
       if (d == 0) {
         exit(1);
       }
       int x = SCREEN_WIDTH + i;
       float h = static_cast<float>(SCREEN_HEIGHT)/static_cast<float>(d) * static_cast<float>(scale);
-      draw_stake(x, h, c);
+      draw_stake(x, h, impact);
     }
 
   }
@@ -150,4 +180,5 @@ private:
   int scale;
   SDL_Renderer* renderer;
   std::vector<std::string> map;
+  int tsize;
 };

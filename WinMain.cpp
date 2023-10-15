@@ -6,8 +6,8 @@
 #include <windows.h>
 #include "Raycaster.h"
 #include "color.h"
-#include "SDL_image.h"
-#include "imageloader.h"
+#include "include/SDL_image.h"
+
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -36,6 +36,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   int imgFlags = IMG_INIT_PNG;
   window = SDL_CreateWindow("DOOM", 0, 0, SCREEN_WIDTH * 2, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+  ImageLoader::loadImage("+", "assets/wall2.png");
+  ImageLoader::loadImage("-", "assets/iron.png");
+  ImageLoader::loadImage("|", "assets/wall2.png");
+
+
+
 
   Raycaster r = { renderer };
   r.load_map("assets/map2.txt");
