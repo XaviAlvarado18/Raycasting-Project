@@ -69,7 +69,7 @@ public:
         return Color{color.r, color.g, color.b};
     }
 
-    static void render(SDL_Renderer* renderer, const std::string& key, int x, int y, int size = -1) {
+    static void render(SDL_Renderer* renderer, const std::string& key, int x, int y, int size = -1, int size2 = -1) {
         auto it = imageSurfaces.find(key);
         if (it == imageSurfaces.end()) {
             throw std::runtime_error("Image key not found!");
@@ -88,7 +88,7 @@ public:
         if(size == -1){
            destRect = { x, y, targetSurface->w, targetSurface->h };
         }else{
-            destRect = {x, y, size, size};
+            destRect = {x, y, size, size2};
         }
          
         

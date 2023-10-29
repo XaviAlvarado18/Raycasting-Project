@@ -19,13 +19,16 @@ const int HEIGHT = 11;
 const int BLOCK = 50;
 const int SCREEN_WIDTH = WIDTH * BLOCK;
 const int SCREEN_HEIGHT = HEIGHT * BLOCK;
-
+SDL_Renderer* renderer;
 
 
 struct Player {
   int x;
   int y;
   float a;
+  int mapx;
+  int mapy;
+  float mapA;
   float fov;
 }; 
 
@@ -41,6 +44,25 @@ struct Impact {
   int tx;
 };
 
+
+struct Enemy {
+  int x;
+  int y;
+  std::string texture;
+};
+
+void showGameOverScreen() {
+    // Código para mostrar la pantalla de "Game Over"
+    // Puedes usar SDL para dibujar una imagen de Game Over o un texto en la pantalla, y pausar el juego.
+    // Aquí deberías incluir las funciones necesarias para mostrar la pantalla de Game Over de manera adecuada.
+
+    ImageLoader::loadImage("go","assets/gameover.png");
+    ImageLoader::render(renderer, "go", SCREEN_WIDTH, SCREEN_HEIGHT, 224);
+}
+
+
+std::vector<Enemy> enemies;
+
 class Raycaster {
 public:
   Raycaster(SDL_Renderer* renderer)
@@ -54,6 +76,8 @@ public:
 
     scale = 50;
     tsize = 128;
+
+    enemies =  {Enemy{2*BLOCK, 5*BLOCK , "e1"}, Enemy{BLOCK + 30, BLOCK - 28 ,"e2"}};
   }
 
   void load_map(const std::string& filename) {
@@ -79,6 +103,26 @@ public:
         Color c = ImageLoader::getPixelColor(mapHit, tx, ty);
         SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b , 255);
         SDL_RenderDrawPoint(renderer, cx, cy);
+      }
+    }
+  }
+
+  void draw_enemy(Enemy enemy){
+    float enemy_a = atan2(enemy.y - player.y, enemy.x - player.x);
+    float enemy_d = sqrt(pow(player.x - enemy.x, 2) + pow(player.y - enemy.y, 2));
+    int enemy_size = ((SCREEN_HEIGHT/enemy_d) * scale)/2;
+
+    int enemy_x = (enemy_a - player.a) * (SCREEN_WIDTH/ player.fov) + SCREEN_WIDTH/2.0f - enemy_size/2.0f;
+    int enemy_y = (SCREEN_HEIGHT/2.0f) - enemy_size/2.0f;
+
+    for(int x = enemy_x; x < enemy_x + enemy_size; x++){
+      for(int y = enemy_y; y < enemy_y + enemy_size; y++){
+        int tx = (x - enemy_x) * tsize / enemy_size;
+        int ty = (y - enemy_y) * tsize / enemy_size;
+
+        Color c = ImageLoader::getPixelColor(enemy.texture, tx, ty);
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b , 255);
+        SDL_RenderDrawPoint(renderer, x, y);
       }
     }
   }
@@ -159,7 +203,6 @@ public:
 
     */
     // draw right side of the screen
-    
     for (int i = 0; i < SCREEN_WIDTH; i++) {
       double a = player.a + player.fov / 2.0 - player.fov * i / SCREEN_WIDTH;
       Impact impact = cast_ray(a);
@@ -172,6 +215,10 @@ public:
       int x = i;
       float h = static_cast<float>(SCREEN_HEIGHT)/static_cast<float>(d * cos(a - player.a)) * static_cast<float>(scale);
       draw_stake(x, h, impact);
+    }
+
+    for(Enemy enemy : enemies){
+      draw_enemy(enemy);
     }
 
   }
