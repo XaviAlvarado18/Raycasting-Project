@@ -13,6 +13,7 @@
 SDL_Window* window;
 bool isMusicPlaying = true; 
 bool showWelcome = true;
+bool winnable = false;
 
 void clear() {
   SDL_SetRenderDrawColor(renderer, 56, 56, 56, 255);
@@ -74,7 +75,7 @@ void draw_ui(SDL_Renderer* renderer, int width, int height){
   int sizeP = 192;
   int sizeB = 112;
   ImageLoader::render(renderer, "p", SCREEN_WIDTH - sizeP/1.0f, SCREEN_HEIGHT - sizeP, sizeP,sizeP);
-  ImageLoader::render(renderer, "b", SCREEN_WIDTH/2 - sizeB/2.0f, SCREEN_HEIGHT - sizeB, sizeB, sizeB);
+  ImageLoader::render(renderer, "b", SCREEN_WIDTH/2 - sizeB/2.0f, SCREEN_HEIGHT - sizeB, 170, sizeB);
 }
 
 // Función que maneja la reproducción de música en un hilo separado
@@ -122,6 +123,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   ImageLoader::loadImage("+", "assets/wall2.png");
   ImageLoader::loadImage("-", "assets/iron.png");
   ImageLoader::loadImage("|", "assets/wall2.png");
+  ImageLoader::loadImage("bk", "assets/wall2.png");
   ImageLoader::loadImage("p", "assets/ironpickaxe.png");
   ImageLoader::loadImage("b", "assets/background.png");
   ImageLoader::loadImage("d", "assets/diamond.png");
@@ -138,6 +140,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   ImageLoader::loadImage("hs5","assets/hs5.png");
   ImageLoader::loadImage("hs6","assets/hs6.png");
   ImageLoader::loadImage("hs7","assets/hs7.png");
+  ImageLoader::loadImage("w1","assets/winnable.png");
 
   Raycaster r = { renderer };
   r.load_map("assets/map2.txt");
@@ -216,6 +219,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             r.player.mapx = static_cast<int>(r.player.x / 3);
             r.player.mapy = static_cast<int>(r.player.y / 3);
       }
+
+    if (winnable) {
+        r.draw_victory_screen();
+    }
+
+    if (r.has_won()) {
+        winnable = true;
+    }
+
 
     clear();
     draw_floor();
