@@ -32,36 +32,29 @@ void draw_floor() {
   SDL_RenderFillRect(renderer, &rect);
 }
 
-
+//ANIMACIÓN DE SPRITES DE IMAGENES DE BIENVENIDA
 void showWelcomeScreen(SDL_Renderer* renderer, bool& showWelcome) {
     std::vector<std::string> imageKeys = {"hs1", "hs2", "hs3", "hs4", "hs5", "hs6", "hs7"};
 
     Uint32 frameInterval = 250;
-    int frameIndex = 0;  // Índice del cuadro actual
+    int frameIndex = 0;  
 
     bool quit = false;
     while (!quit) {
-        // Dibuja el cuadro actual en la ventana
-        ImageLoader::render(renderer, imageKeys[frameIndex], 0, 0, 1050, 550);
+        ImageLoader::render(renderer, imageKeys[frameIndex], 0, 0, 800, 550);
         SDL_RenderPresent(renderer);
-
-        // Espera el tiempo de intervalo entre cuadros
         SDL_Delay(frameInterval);
-
-        // Avanza al siguiente cuadro
         frameIndex++;
         if (frameIndex >= imageKeys.size()) {
-            frameIndex = 0;  // Reiniciar la animación al llegar al final
+            frameIndex = 0;  
         }
-
-        // Maneja eventos, como la salida de la ventana y eventos de teclado
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
-                // Salir si el usuario cierra la ventana
+                
                 quit = true;
             } else if (event.type == SDL_KEYDOWN) {
-                // Al presionar cualquier tecla, ocultar la pantalla de bienvenida
+                
                 quit = true;
                 showWelcome = false;
             }
@@ -72,8 +65,8 @@ void showWelcomeScreen(SDL_Renderer* renderer, bool& showWelcome) {
 
 
 void draw_ui(SDL_Renderer* renderer, int width, int height){
-  int sizeP = 192;
-  int sizeB = 112;
+  int sizeP = 182;
+  int sizeB = 102;
   ImageLoader::render(renderer, "p", SCREEN_WIDTH - sizeP/1.0f, SCREEN_HEIGHT - sizeP, sizeP,sizeP);
   ImageLoader::render(renderer, "b", SCREEN_WIDTH/2 - sizeB/2.0f, SCREEN_HEIGHT - sizeB, 170, sizeB);
 }
@@ -152,6 +145,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   bool isMovingRight = false;
   bool keys[SDL_NUM_SCANCODES] = {false};
   bool running = true;
+  float newPlayerX = 0.0f;
+  float newPlayerY = 0.0f;
 
   showWelcomeScreen(renderer, showWelcome);
 
@@ -164,61 +159,59 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         break;
       }
       if (event.type == SDL_KEYDOWN) {
-                keys[event.key.keysym.scancode] = true;
-            }
-            if (event.type == SDL_KEYUP) {
-                keys[event.key.keysym.scancode] = false;
-            }
+        switch(event.key.keysym.sym ){
+          case SDLK_LEFT:
+            r.player.a += M_PI/500;
+            break;
+          case SDLK_RIGHT:
+            r.player.a -= M_PI/500;
+            break;
+          case SDLK_w:
+            newPlayerX = r.player.x;
+            newPlayerY = r.player.y;
+            r.incertidumbreX += M_PI/12;
+            r.incertidumbreY += M_PI/8;
+            newPlayerX += speed * cos(r.player.a);
+            newPlayerY += speed * sin(r.player.a);
 
-            // Captura los movimientos del mouse
-            if (event.type == SDL_MOUSEMOTION) {
-                int mouseX = event.motion.x;
-                //print(event.motion.x);
-                int mouseXDelta = mouseX - prevMouseX;
-                prevMouseX = mouseX;
-                // Ajusta la dirección de vista del jugador en función del movimiento del mouse
-                r.player.a -= static_cast<float>(mouseXDelta) * 0.02f; // Puedes ajustar el factor de sensibilidad
-                r.player.mapA -= static_cast<float>(mouseXDelta) * 0.02f;
-          }
-    }
-
-
-    if (keys[SDL_SCANCODE_LEFT]) {
-            r.player.a += 3.14/24;
-            r.player.mapA += (M_PI/24);
-            widthP = 120;
-            heightP = 80;
-            isMovingLeft = true;
-        } else if (keys[SDL_SCANCODE_RIGHT]) {
-            r.player.a -= 3.14/24;
-            r.player.mapA -= (M_PI/24);
-            widthP = 120;
-            heightP = 80;
-            isMovingRight = true;
-        } else {
-            // Cuando no se está moviendo a la izquierda o derecha, vuelve a la imagen predeterminada.
-            if (isMovingLeft) {
-                widthP = 80;
-                heightP = 80;
-                isMovingLeft = false;
-            } else if (isMovingRight) {
-                widthP = 80;
-                heightP = 80;
-                isMovingRight = false;
+            if (!r.isWallCollision(newPlayerX, newPlayerY)) {
+                    r.player.x = newPlayerX;
+                    r.player.y = newPlayerY;
             }
+            break;
+          case SDLK_s:
+            newPlayerX = r.player.x;
+            newPlayerY = r.player.y;
+            r.incertidumbreX -= M_PI/12;
+            r.incertidumbreY += M_PI/8;
+            newPlayerX -= speed * cos(r.player.a);
+            newPlayerY -= speed * sin(r.player.a);
+
+            if (!r.isWallCollision(newPlayerX, newPlayerY)) {
+                    r.player.x = newPlayerX;
+                    r.player.y = newPlayerY;
+            }
+            break;
+            case SDLK_1: //Tecla para salir
+                exit(1);
+           default:
+            break;
         }
-        if (keys[SDL_SCANCODE_UP]) {
-            r.player.x += static_cast<int>(speed * cos(r.player.a));
-            r.player.y += static_cast<int>(speed * sin(r.player.a));
-            r.player.mapx = static_cast<int>(r.player.x / 3);
-            r.player.mapy = static_cast<int>(r.player.y / 3);
-        }
-        if (keys[SDL_SCANCODE_DOWN]) {
-            r.player.x -= static_cast<int>(speed * cos(r.player.a));
-            r.player.y -= static_cast<int>(speed * sin(r.player.a));
-            r.player.mapx = static_cast<int>(r.player.x / 3);
-            r.player.mapy = static_cast<int>(r.player.y / 3);
       }
+
+      if (event.type == SDL_MOUSEMOTION) {
+        int mouseX = event.motion.x;
+        int mouseY = event.motion.y;
+        int deltaX = (mouseX > SCREEN_WIDTH/2)? 1 : -1;
+        deltaX = (mouseX == SCREEN_WIDTH/2)? 0:deltaX;
+
+        // Ajustar la velocidad de rotación según la posición del mouse
+        double rotationSpeed = - M_PI / 30;
+        r.player.a += rotationSpeed * deltaX;
+        SDL_WarpMouseInWindow(NULL, SCREEN_WIDTH/2, SCREEN_HEIGHT / 2);
+        // Actualizar la posición anterior del mouse
+      }
+    }
 
     if (winnable) {
         r.draw_victory_screen();
@@ -228,7 +221,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         winnable = true;
     }
 
-
     clear();
     draw_floor();
 
@@ -236,7 +228,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     draw_ui(renderer, widthP, heightP);
 
-    // render
 
     SDL_RenderPresent(renderer);
   }

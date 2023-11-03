@@ -15,7 +15,7 @@
 const Color B = {0, 0, 0};
 const Color W = {255, 255, 255};
 
-const int WIDTH = 21;
+const int WIDTH = 16;
 const int HEIGHT = 11;
 const int BLOCK = 50;
 const int SCREEN_WIDTH = WIDTH * BLOCK;
@@ -78,6 +78,8 @@ public:
     tsize = 128;
     textSize = 128;
     enemies =  {Enemy{2*BLOCK, 5*BLOCK , "e1"}, Enemy{BLOCK + 30, BLOCK - 28 ,"e2"}};
+    incertidumbreY = 0.0f;
+    incertidumbreX = 0.0f;
   }
 
   void load_map(const std::string& filename) {
@@ -140,8 +142,8 @@ public:
         int tx = ((cx - x) * tsize) / BLOCK;
         int ty = ((cy - y) * tsize) / BLOCK;
 
-        //Color c = ImageLoader::getPixelColor(mapHit, tx, ty);
-        //SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b , 255);
+        Color c = ImageLoader::getPixelColor(mapHit, tx, ty);
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b , 255);
         SDL_RenderDrawPoint(renderer, cx, cy);
       }
     }
@@ -268,6 +270,26 @@ public:
         return Impact{d, mapHit, tx};
     }
 
+  bool isWallCollision(float newX, float newY){
+      bool isWall = false;
+      if(newY> map.size() || newX>map[0].size()){
+        int y = static_cast<int>((newY+0.01 *BLOCK)/BLOCK);
+        int x = static_cast<int>((newX+0.01 *BLOCK)/BLOCK);
+
+        isWall = map[y][x]!=' '&& map[y][x]!= '.';
+
+        if(!isWall){
+          y = static_cast<int>((newY-0.01 *BLOCK)/BLOCK);
+          x = static_cast<int>((newX-0.01 *BLOCK)/BLOCK);
+
+          isWall = map[y][x]!=' '&& map[y][x]!= '.';
+        }
+
+      }
+
+      return isWall;
+  }
+
   bool has_won() {
         int player_x = static_cast<int>(player.x / BLOCK);
         int player_y = static_cast<int>(player.y / BLOCK);
@@ -291,15 +313,16 @@ public:
         // Refresca el renderizador
         SDL_RenderPresent(renderer);
     }
+
  
   void render() {
     
     // draw left side of the screen
     /*
-    for (int x = 0; x < static_cast<int>(SCREEN_WIDTH /5); x += static_cast<int>(BLOCK /5)) {
-            for (int y = 0; y < static_cast<int>(SCREEN_HEIGHT /5); y += static_cast<int>(BLOCK /5)) {
-                int i = static_cast<int>(x / static_cast<int>(BLOCK /5));
-                int j = static_cast<int>(y / static_cast<int>(BLOCK /5));
+    for (int x = 0; x < SCREEN_WIDTH; x += BLOCK) {
+      for (int y = 0; y < SCREEN_HEIGHT; y += BLOCK) {
+        int i = static_cast<int>(x / BLOCK);
+        int j = static_cast<int>(y / BLOCK);
         
         if (map[j][i] != ' ') {
           std::string mapHit;
@@ -310,12 +333,12 @@ public:
       }
     }
 
-    for (int i = 1; i < static_cast<int>(SCREEN_HEIGHT/5); i++) {
-      float a = player.a + player.fov / 2 - player.fov * i / static_cast<int>(SCREEN_HEIGHT/5);
+    for (int i = 1; i < SCREEN_WIDTH; i++) {
+      float a = player.a + player.fov / 2 - player.fov * i / SCREEN_WIDTH;
       cast_ray(a);
     }
-
-    */    
+    */
+        
     // draw right side of the screen
 
     // Recopila todos los puntos a dibujar junto con sus colores
@@ -330,9 +353,7 @@ public:
       float d = impact.d;
       Color c = Color(255, 0, 0);
 
-      if (d == 0) {
-        exit(1);
-      }
+      
       int x = i;
       float h = static_cast<float>(SCREEN_HEIGHT)/static_cast<float>(d * cos(a - player.a)) * static_cast<float>(scale);
       float start = SCREEN_HEIGHT / 2.0f - h / 2.0f;
@@ -361,6 +382,8 @@ public:
   }
 
   Player player;
+  float incertidumbreY;
+  float incertidumbreX;
 private:
   int scale;
   SDL_Renderer* renderer;
@@ -402,6 +425,8 @@ private:
                 tx = maxHit * textSize / BLOCK;
                 break;
             }
+
+            
 
             d += 1;
         }
