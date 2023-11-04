@@ -29,3 +29,6 @@ Características Principales
 - Combate básico.
 
 Representación Visual del Juego
+<div align="center">
+      <img src="Minecraft.gif" alt="Gif de Minecraft">
+</div>
