@@ -14,6 +14,12 @@ SDL_Window* window;
 bool isMusicPlaying = true; 
 bool showWelcome = true;
 bool winnable = false;
+int countedFrames = 0;
+Uint32 frameStart;
+Uint32 capTimer = 0;
+const int SCREEN_FPS = 144;  // Aumentado a 144 FPS
+const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
+const char* windowTitle;
 
 void clear() {
   SDL_SetRenderDrawColor(renderer, 56, 56, 56, 255);
@@ -108,9 +114,24 @@ int PlayMusicThread() {
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
+    ++countedFrames;
+    int frameTicks = SDL_GetTicks() - frameStart;
+    if (frameTicks < SCREEN_TICKS_PER_FRAME) {
+      SDL_Delay(SCREEN_TICKS_PER_FRAME - frameTicks);
+    }
+
+    windowTitle = ("DOOM - FPS: " + std::to_string(countedFrames)).c_str();
+
+    if (SDL_GetTicks() - capTimer >= 1000) {
+      capTimer = SDL_GetTicks();
+      
+      SDL_SetWindowTitle(window, windowTitle);
+      countedFrames = 0;
+    }
+
   SDL_Init(SDL_INIT_VIDEO);
   int imgFlags = IMG_INIT_PNG;
-  window = SDL_CreateWindow("DOOM", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+  window = SDL_CreateWindow(windowTitle, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
   ImageLoader::loadImage("+", "assets/wall2.png");
@@ -122,6 +143,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   ImageLoader::loadImage("d", "assets/diamond.png");
   ImageLoader::loadImage("g", "assets/gold.png");
   ImageLoader::loadImage("r", "assets/coal.png");
+  ImageLoader::loadImage("e", "assets/emerald.png");
+  ImageLoader::loadImage("s", "assets/redstone.png");
+  ImageLoader::loadImage("o", "assets/obsidian.png");
   ImageLoader::loadImage("c", "assets/cartel.png");
   ImageLoader::loadImage("w", "assets/cartel2.png");
   ImageLoader::loadImage("e1","assets/creeperMini.png");
@@ -228,6 +252,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     draw_ui(renderer, widthP, heightP);
 
+
+    
 
     SDL_RenderPresent(renderer);
   }

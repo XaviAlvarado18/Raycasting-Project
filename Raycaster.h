@@ -137,13 +137,13 @@ public:
     }
 
   void rect(int x, int y, const std::string& mapHit) {
-    for(int cx = x; cx < x + BLOCK; cx++) {
-      for(int cy = y; cy < y + BLOCK; cy++) {
+    for(int cx = x; cx < x + (BLOCK/5); cx++) {
+      for(int cy = y; cy < y + (BLOCK/5); cy++) {
         int tx = ((cx - x) * tsize) / BLOCK;
         int ty = ((cy - y) * tsize) / BLOCK;
 
-        Color c = ImageLoader::getPixelColor(mapHit, tx, ty);
-        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b , 255);
+        //Color c = ImageLoader::getPixelColor(mapHit, tx, ty);
+        //SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b , 255);
         SDL_RenderDrawPoint(renderer, cx, cy);
       }
     }
@@ -318,9 +318,9 @@ public:
   void render() {
     
     // draw left side of the screen
-    /*
-    for (int x = 0; x < SCREEN_WIDTH; x += BLOCK) {
-      for (int y = 0; y < SCREEN_HEIGHT; y += BLOCK) {
+    
+    for (int x = 0; x < (SCREEN_WIDTH); x += BLOCK) {
+      for (int y = 0; y < (SCREEN_HEIGHT); y += BLOCK) {
         int i = static_cast<int>(x / BLOCK);
         int j = static_cast<int>(y / BLOCK);
         
@@ -337,7 +337,7 @@ public:
       float a = player.a + player.fov / 2 - player.fov * i / SCREEN_WIDTH;
       cast_ray(a);
     }
-    */
+    
         
     // draw right side of the screen
 
