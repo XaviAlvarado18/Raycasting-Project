@@ -16,3 +16,16 @@ git clone https://github.com/XaviAlvarado18/Raycasting-Project.git
 2. Instalar las dependencias necesarias:
 - SDL2
 - SDL.Image
+
+Instrucciones de Uso
+1. Compilar el proyecto utilizando el compilador de C++ de tu preferencia.
+2. Ejecutar el archivo binario resultante.
+3. Disfruta del juego.
+
+Características Principales
+- Recreación de Minecraft en formato 'DOOM'.
+- Movimiento en primera persona.
+- Exploración y recolección de recursos.
+- Combate básico.
+
+Representación Visual del Juego
