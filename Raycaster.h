@@ -33,12 +33,6 @@ struct Player {
   float fov;
 }; 
 
-std::unordered_map<std::string, Color> colors = {
-  { "-", { 240, 200, 0 } },
-  { "|", { 220, 36, 33 } },
-  { "+", { 64, 169, 68 } }
-};
-
 struct Impact {
   float d;
   std::string mapHit;  // + | -
@@ -52,13 +46,6 @@ struct Enemy {
   std::string texture;
 };
 
-void showGameOverScreen() {
-    // Código para mostrar la pantalla de "Game Over"
-    // Puedes usar SDL para dibujar una imagen de Game Over o un texto en la pantalla, y pausar el juego.
-    // Aquí deberías incluir las funciones necesarias para mostrar la pantalla de Game Over de manera adecuada.
-    ImageLoader::loadImage("go","assets/gameover.png");
-    ImageLoader::render(renderer, "go", 0, 0, 1050, 550);
-}
 
 
 std::vector<Enemy> enemies;
@@ -207,68 +194,6 @@ public:
     return Impact{d, mapHit, tx};
   }
 
-  void draw_stake(int x, float h, Impact i) {
-    float start = SCREEN_HEIGHT/2.0f - h/2.0f;
-    float end = start + h;
-
-    for (int y = start; y < end; y++) {
-      int ty = (y - start) * tsize / h;
-      Color c = ImageLoader::getPixelColor(i.mapHit, i.tx, ty);
-      SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
-
-      SDL_RenderDrawPoint(renderer, x, y);
-    }
-  } 
-
-  void minimap_bg(SDL_Renderer* renderer) {
-        int size = 230;
-        ImageLoader::render(renderer, "bk", 0, 0, size, 110);
-  }
-
-
- Impact cast_ray_map(float a) {
-        float d = 0;
-        std::string mapHit;
-        int tx;
-        int x = static_cast<int>(player.mapx + d * cos(a));
-        int y = static_cast<int>(player.mapy + d * sin(a));
-
-        std::vector<std::pair<int, int>> pointsToDraw; // Para almacenar los puntos a dibujar
-        std::vector<Color> pointColors; // Para almacenar los colores de los puntos
-
-        while (true) {
-            int i = static_cast<int>(x / (BLOCK / 5));
-            int j = static_cast<int>(y / (BLOCK / 5));
-
-            if (map[j][i] != ' ' && map[j][i] != '.') {
-                mapHit = map[j][i];
-                int hitx = x - i * static_cast<int>(BLOCK / 5);
-                int hity = y - j * static_cast<int>(BLOCK / 5);
-                int maxHit;
-                if (hitx == 0 || hitx == static_cast<int>(BLOCK / 5) - 1) {
-                    maxHit = hity;
-                } else {
-                    maxHit = hitx;
-                }
-                tx = maxHit * textSize / static_cast<int>(BLOCK / 5);
-                break;
-            }
-
-            d += 1;
-
-            // Agrega el punto a la lista de puntos a dibujar
-            pointsToDraw.push_back({x, y});
-            pointColors.push_back(W); // Color de los puntos en el mapa (puedes cambiarlo si es necesario)
-
-            x = static_cast<int>(player.mapx + d * cos(a));
-            y = static_cast<int>(player.mapy + d * sin(a));
-        }
-
-        // Dibuja todos los puntos en el mapa a la vez con sus colores correspondientes
-        points(pointsToDraw, pointColors);
-
-        return Impact{d, mapHit, tx};
-    }
 
   bool isWallCollision(float newX, float newY){
       bool isWall = false;

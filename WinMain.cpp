@@ -8,6 +8,7 @@
 #include "color.h"
 #include "include/SDL_image.h"
 #include <thread>
+#include "include/SDL_mixer.h"
 
 // Variables globales
 SDL_Window* window;
@@ -37,6 +38,25 @@ void draw_floor() {
   };
   SDL_RenderFillRect(renderer, &rect);
 }
+
+// Variable global para el efecto de sonido
+Mix_Chunk* soundEffect = nullptr;
+
+// Función para cargar el efecto de sonido
+void loadSoundEffect() {
+    soundEffect = Mix_LoadWAV("./assets/moogcity2.wav");
+    if (!soundEffect) {
+        // Manejar el error si no se puede cargar el efecto de sonido
+    }
+}
+
+// Función para reproducir el efecto de sonido
+void playSoundEffect() {
+    if (Mix_PlayChannel(-1, soundEffect, 0) == -1) {
+        std::cerr << "No se pudo reproducir el efecto de sonido" << std::endl;
+    }
+}
+
 
 //ANIMACIÓN DE SPRITES DE IMAGENES DE BIENVENIDA
 void showWelcomeScreen(SDL_Renderer* renderer, bool& showWelcome) {
@@ -175,6 +195,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   showWelcomeScreen(renderer, showWelcome);
 
   std::thread musicThread(PlayMusicThread);
+  
+  // Cargar el efecto de sonido
+  loadSoundEffect();
+
+  // Variable para controlar el tiempo de reproducción del efecto de sonido
+  Uint32 soundTimer = SDL_GetTicks();
   while(running) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -245,6 +271,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         winnable = true;
     }
 
+
+    // Verificar si ha pasado el intervalo de 10 segundos
+    if (SDL_GetTicks() - soundTimer >= 10000) {
+      // Reproducir el efecto de sonido
+      playSoundEffect();
+
+      // Reiniciar el temporizador
+      soundTimer = SDL_GetTicks();
+    }
+   
+
     clear();
     draw_floor();
 
@@ -253,12 +290,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     draw_ui(renderer, widthP, heightP);
 
 
-    
-
     SDL_RenderPresent(renderer);
   }
 
   musicThread.join();
+  
+  // Liberar los recursos del efecto de sonido
+  Mix_FreeChunk(soundEffect);
 
   SDL_DestroyWindow(window);
   SDL_Quit();
